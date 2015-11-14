@@ -10,9 +10,25 @@ public class CharacterSelection : MonoBehaviour {
 
     public void characterSelection(int faction) {
         PlayerPrefs.SetInt("FACTION", faction);
-        PlayerPrefs.SetFloat("MELEE",1F);
-        PlayerPrefs.SetFloat("MAGIC", 1F);
-        PlayerPrefs.SetFloat("DEFENSE", 1F);
+        if (faction == 1)
+        {
+            PlayerPrefs.SetFloat("MELEE", 1F);
+            PlayerPrefs.SetFloat("MAGIC", 1F);
+            PlayerPrefs.SetFloat("DEFENSE", 2F);
+        }
+        else if (faction == 2) {
+            PlayerPrefs.SetFloat("MELEE", 0F);
+            PlayerPrefs.SetFloat("MAGIC", 1F);
+            PlayerPrefs.SetFloat("DEFENSE", 1F);
+        }
+        else if (faction == 3)
+        {
+            PlayerPrefs.SetFloat("MELEE", 1F);
+            PlayerPrefs.SetFloat("MAGIC", 1F);
+            PlayerPrefs.SetFloat("DEFENSE", 1F);
+        }
 
+        PlayerPrefs.SetInt("LEVEL",1);
+        //Go to another scene...
     }
 }
