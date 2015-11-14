@@ -6,13 +6,18 @@ public class FloorManager : MonoBehaviour {
     public Sprite[] floorTemplates;
     private GameObject[] floors;
 
-    void Start()
+    private void Start()
     {
-        floors = GameObject.FindGameObjectsWithTag("floor");
+        this.floors = GameObject.FindGameObjectsWithTag("floor");
+        if (this.floors == null)
+        {
+            Debug.LogError("Any object has the tag");
+            this.enabled = false; 
+        }
         foreach (GameObject obj in floors)
         {
-            int rand = Random.Range(0, floorTemplates.Length);
-            obj.GetComponent<SpriteRenderer>().sprite = floorTemplates[rand];
+            int rand = Random.Range(0, this.floorTemplates.Length);
+            obj.GetComponent<SpriteRenderer>().sprite = this.floorTemplates[rand];
         }
 
     }
