@@ -9,6 +9,8 @@ public class Enemy : MonoBehaviour
     public float magic;
     public float defense;
     public float health;
+    private float maxHealth;
+    private float maxMagic;
 
     [Header("Set particle system")]
     public ParticleSystem magicBall;
@@ -18,6 +20,10 @@ public class Enemy : MonoBehaviour
     private BoxCollider2D boxCollider;
     private float translateDuration = 0.5f;
     private float attackDuration = 0.5f;
+
+    public GameObject healthBar;
+    public GameObject magicBar;
+    private float HBLength;
 
     void Start()
     {
@@ -34,10 +40,17 @@ public class Enemy : MonoBehaviour
             Debug.LogError("No boxCollider2D as component");
 
         this.gameObject.transform.position = this.spawnPoint.position;
+        this.maxHealth = this.health;
+        this.maxMagic = this.magic;
+        this.magic = 0;
+        this.HBLength = this.healthBar.transform.localScale.x;
+        StartCoroutine(AddjustCurrentMana(+1));
 
-        Invoke("Defense", 1);
     }
-
+    void Update()
+    {
+        AddjustCurrentHealth(-1);
+    }
     public void Attack01()
     {
         Debug.Log("ATTACK 01");
@@ -93,6 +106,35 @@ public class Enemy : MonoBehaviour
         }
         yield return new WaitForSeconds(attackDuration);
         StartCoroutine(Move(spawnPoint.transform.position));
+        yield return null;
+    }
+
+    public void AddjustCurrentHealth(int adj)
+    {
+
+        this.health += adj;
+
+        if (this.health < 0)
+            this.health = 0;
+
+        if (this.health > this.maxHealth)
+            this.health = this.maxHealth;
+
+        if (this.maxHealth < 1)
+            this.maxHealth = 1;
+
+        this.healthBar.transform.localScale = new Vector3(this.HBLength * (this.health / (float)maxHealth), this.HBLength, this.HBLength);
+    }
+
+    private IEnumerator AddjustCurrentMana(int adj)
+    {
+        while (this.magic < this.maxMagic)
+        {
+            Debug.Log("I'm recharging magic"); 
+            this.magic += 0.5f;
+            yield return null;
+        }
+        Debug.Log("END");
         yield return null;
     }
 }

@@ -13,6 +13,9 @@ public class PlayerController : MonoBehaviour
     private int EXP;
     private int Faction;
     private StatsManager stats;
+    public float magic;
+    public float defense;
+    public float health;
 
     private GameObject enemy;
     private BoxCollider2D boxColl;
@@ -20,6 +23,12 @@ public class PlayerController : MonoBehaviour
     private float translateDuration = 0.5f;
     private float attackDuration = 0.5f;
     private GameObject shield;
+
+    public GameObject healthBar;
+    public GameObject magicBar;
+    private float HBLength;
+    private float maxHealth;
+    private float maxMagic;
 
     // Use this for initialization
     void Start()
@@ -40,6 +49,10 @@ public class PlayerController : MonoBehaviour
 
         this.spawnPoint = this.transform.position;
 
+        this.maxHealth = this.health;
+        this.maxMagic = this.magic;
+        this.magic = 0;
+        this.HBLength = this.healthBar.transform.localScale.x;
 
         if (PlayerPrefs.HasKey("PLAYER_EXP"))
         {
@@ -52,6 +65,12 @@ public class PlayerController : MonoBehaviour
         }
         Faction = PlayerPrefs.GetInt("FACTION");
         stats = GetComponent<StatsManager>();
+        StartCoroutine(AddjustCurrentMana(+1));
+    }
+
+    void Update()
+    {
+        AddjustCurrentHealth(-1);
     }
 
     void OnEnable()
@@ -126,6 +145,36 @@ public class PlayerController : MonoBehaviour
         }
         yield return new WaitForSeconds(attackDuration);
         StartCoroutine(Move(spawnPoint));
+        yield return null;
+    }
+
+    public void AddjustCurrentHealth(int adj)
+    {
+
+        this.health += adj;
+
+        if (this.health < 0)
+            this.health = 0;
+
+        if (this.health > this.maxHealth)
+            this.health = this.maxHealth;
+
+        if (this.maxHealth < 1)
+            this.maxHealth = 1;
+
+        this.healthBar.transform.localScale = new Vector3(this.HBLength * (this.health / (float)maxHealth), this.HBLength, this.HBLength);
+    }
+
+    private IEnumerator AddjustCurrentMana(int adj)
+    {
+        while (this.magic < this.maxMagic)
+        {
+            Debug.Log("I'm recharging magic");
+            this.magic += 0.5f;
+            this.magicBar.transform.localScale = new Vector3(this.HBLength * (this.magic / (float)maxMagic), this.HBLength, this.HBLength);
+            yield return null;
+        }
+        Debug.Log("END");
         yield return null;
     }
 }
