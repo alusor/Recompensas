@@ -16,6 +16,7 @@ public class Enemy : MonoBehaviour
     public ParticleSystem magicBall;
 
     private GameObject player;
+    private PlayerController playerC;
     private Transform spawnPoint;
     private BoxCollider2D boxCollider;
     private float translateDuration = 0.5f;
@@ -24,12 +25,14 @@ public class Enemy : MonoBehaviour
     public GameObject healthBar;
     public GameObject magicBar;
     private float HBLength;
-
+    private bool canIDefend = false;
     void Start()
     {
         this.player = GameObject.FindGameObjectWithTag("Player");
         if (this.player == null)
             Debug.LogError("No player found");
+
+        this.playerC = player.GetComponent<PlayerController>();
 
         this.spawnPoint = GameObject.FindGameObjectWithTag("SpawnPoint").transform;
         if (this.spawnPoint == null)
@@ -46,23 +49,38 @@ public class Enemy : MonoBehaviour
         this.HBLength = this.healthBar.transform.localScale.x;
         StartCoroutine(AddjustCurrentMana(+1));
 
+        Invoke("Attack01", 2);
+        Invoke("Defense", 5);
     }
     void Update()
     {
-        AddjustCurrentHealth(-1);
+        if (canIDefend == true)
+        {
+            Debug.Log("Charged");
+            canIDefend = false;
+            magic = 0;
+            int rnd = Random.Range(0, 4);
+            Invoke("MagicAttack", rnd);
+            StartCoroutine(AddjustCurrentMana(+1));
+
+        }
+
     }
     public void Attack01()
     {
         Debug.Log("ATTACK 01");
         this.gameObject.transform.position = player.transform.position + new Vector3(0.0f, 1.0f);
         StartCoroutine(WaitToAttack01(attackDuration));
-        
+        Invoke("Attack01", 2);
+        playerC.AddjustCurrentHealth((int)-melee);
+
 
     }
     public void Attack02()
     {
         Debug.Log("ATTACK 02");
         StartCoroutine(Move(player.transform.position + new Vector3(0.0f, 1.0f)));
+        playerC.AddjustCurrentHealth((int)-melee);
     }
 
     public void MagicAttack()
@@ -71,13 +89,20 @@ public class Enemy : MonoBehaviour
         ParticleSystem obj = (ParticleSystem)Instantiate(magicBall);
         obj.transform.position = this.transform.position;
         obj.gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0.0f,2.0f));
+        playerC.AddjustCurrentHealth((int)-magic/3);
     }
 
     public void Defense()
     {
-        Debug.Log("DEFENSE");
-        this.boxCollider.enabled = false;
-        StartCoroutine(WaitToDefense(1.0f));
+        int rnd = Random.Range(0, 101);
+        if (rnd < 75)
+        {
+            Debug.Log("DEFENSE");
+            this.boxCollider.enabled = false;
+            StartCoroutine(WaitToDefense(1.0f));
+        }
+        Invoke("Defense", 5);
+
     }
 
     IEnumerator WaitToAttack01(float seconds)
@@ -115,13 +140,13 @@ public class Enemy : MonoBehaviour
         this.health += adj;
 
         if (this.health < 0)
-            this.health = 0;
+            Destroy(this.gameObject);
 
         if (this.health > this.maxHealth)
             this.health = this.maxHealth;
 
         if (this.maxHealth < 1)
-            this.maxHealth = 1;
+            Destroy(this.gameObject);
 
         this.healthBar.transform.localScale = new Vector3(this.HBLength * (this.health / (float)maxHealth), this.HBLength, this.HBLength);
     }
@@ -135,6 +160,7 @@ public class Enemy : MonoBehaviour
             yield return null;
         }
         Debug.Log("END");
+        canIDefend = true;
         yield return null;
     }
 }

@@ -14,10 +14,12 @@ public class PlayerController : MonoBehaviour
     private int Faction;
     private StatsManager stats;
     public float magic;
+    public float melee;
     public float defense;
     public float health;
 
     private GameObject enemy;
+    private Enemy enemyEn;
     private BoxCollider2D boxColl;
     private Vector3 spawnPoint;
     private float translateDuration = 0.5f;
@@ -36,6 +38,8 @@ public class PlayerController : MonoBehaviour
         this.enemy = GameObject.FindGameObjectWithTag("Enemy");
         if (this.enemy == null)
             Debug.LogError("No enemy found");
+
+        this.enemyEn = enemy.GetComponent<Enemy>();
 
         this.boxColl = this.gameObject.GetComponent<BoxCollider2D>();
         if (this.boxColl == null)
@@ -70,7 +74,6 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        AddjustCurrentHealth(-1);
     }
 
     void OnEnable()
@@ -93,6 +96,8 @@ public class PlayerController : MonoBehaviour
         this.gameObject.transform.position = this.enemy.transform.position + new Vector3(0.0f, -1.0f);
         StopAllCoroutines();
         StartCoroutine(WaitToAttack01(attackDuration));
+        Debug.Log("enemy health: " + enemyEn.health);
+        enemyEn.AddjustCurrentHealth((int)-melee);
 
 
     }
@@ -101,6 +106,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log("ATTACK 02");
         StopAllCoroutines();
         StartCoroutine(Move(enemy.transform.position + new Vector3(0.0f, -1.0f)));
+        enemyEn.AddjustCurrentHealth((int)-melee);
     }
     public void Defense(SwipeInfo swipe)
     {
@@ -116,6 +122,7 @@ public class PlayerController : MonoBehaviour
         ParticleSystem obj = (ParticleSystem)Instantiate(magicBall);
         obj.transform.position = this.transform.position;
         obj.gameObject.GetComponent<Rigidbody2D>().AddForce(new Vector2(0.0f, 700.0f));
+        enemyEn.AddjustCurrentHealth((int)-magic / 3);
     }
 
     IEnumerator WaitToAttack01(float seconds)
@@ -154,13 +161,13 @@ public class PlayerController : MonoBehaviour
         this.health += adj;
 
         if (this.health < 0)
-            this.health = 0;
+            Destroy(this.gameObject);
 
         if (this.health > this.maxHealth)
             this.health = this.maxHealth;
 
         if (this.maxHealth < 1)
-            this.maxHealth = 1;
+            Destroy(this.gameObject);
 
         this.healthBar.transform.localScale = new Vector3(this.HBLength * (this.health / (float)maxHealth), this.HBLength, this.HBLength);
     }
