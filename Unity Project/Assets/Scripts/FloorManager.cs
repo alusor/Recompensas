@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class FloorManager : MonoBehaviour {
-
+    [Header("Set floor Sprites")]
     public Sprite[] floorTemplates;
     private GameObject[] floors;
 
